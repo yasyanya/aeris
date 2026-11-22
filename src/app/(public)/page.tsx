@@ -109,7 +109,7 @@ export default async function Home() {
 
       <section className="mt-5 grid gap-5 md:grid-cols-3">
         {[
-          { icon: MapPin, title: "1 · Pin it", text: "Use your location or drop a pin. Your exact spot is visible only to investigators." },
+          { icon: MapPin, title: "1 · Pin it", text: "Search an address or drop a pin on the map. Your exact spot is visible only to investigators." },
           { icon: Clock, title: "2 · Describe it", text: "When, how strong, what it smelled like, and for how long. The source is optional." },
           { icon: MessageSquareText, title: "3 · Follow it", text: "Get a receipt code. Track review, investigation and the published response." },
         ].map((s) => (

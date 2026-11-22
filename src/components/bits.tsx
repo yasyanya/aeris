@@ -50,7 +50,7 @@ export function Attribution({ className = "" }: { className?: string }) {
       <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">
         Open-Meteo
       </a>{" "}
-      (CC BY 4.0), modelled estimates. Map data © OpenStreetMap contributors.
+      (CC BY 4.0) model estimates; backup: National Weather Service observations at McKinney airport. Map data © OpenStreetMap contributors.
     </p>
   );
 }

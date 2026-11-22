@@ -2,8 +2,8 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Crosshair, Loader2, Lock, MapPin, Pencil, Search } from "lucide-react";
-import { CHARACTERS, DURATIONS, INTENSITY, MAP_BOUNDS, SYMPTOMS, characterLabel, durationLabel, symptomLabel, intensityInfo } from "@/lib/constants";
+import { ArrowLeft, ArrowRight, Check, Loader2, Lock, MapPin, Pencil, Search } from "lucide-react";
+import { CHARACTERS, DURATIONS, INTENSITY, SYMPTOMS, characterLabel, durationLabel, symptomLabel, intensityInfo } from "@/lib/constants";
 import { fmtDateTime, fromLocalInput, toLocalInput } from "@/lib/format";
 
 const PinPickerMap = dynamic(() => import("@/components/map/PinPickerMap"), {
@@ -20,10 +20,9 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [pt, setPt] = useState<Pt | null>(null);
-  const [method, setMethod] = useState<"device" | "pin" | "search">("pin");
+  const [method, setMethod] = useState<"pin" | "search">("pin");
   const [fly, setFly] = useState<Pt | null>(null);
   const [locMsg, setLocMsg] = useState<string | null>(null);
-  const [locating, setLocating] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<{ label: string; lat: number; lon: number }[]>([]);
   const [searching, setSearching] = useState(false);
@@ -56,41 +55,6 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
     setPt(p);
     setMethod("pin");
   }, []);
-
-  const useDevice = () => {
-    setLocMsg(null);
-    if (!window.isSecureContext)
-      return setLocMsg("Your browser only shares location on secure (https) pages. Tap the map to drop a pin instead.");
-    if (!("geolocation" in navigator)) return setLocMsg("Location isn't available on this device. Tap the map to drop a pin.");
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocating(false);
-        const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        // Reports must be in or near the Melissa area (same limits the server checks).
-        const [[s, w], [n, e]] = MAP_BOUNDS;
-        if (p.lat < s - 0.12 || p.lat > n + 0.12 || p.lon < w - 0.12 || p.lon > e + 0.12) {
-          setLocMsg("Your device location is outside the Melissa area this app covers. Tap the map where you noticed the odor instead.");
-          return;
-        }
-        setPt(p);
-        setFly(p);
-        setMethod("device");
-        if (pos.coords.accuracy > 200) setLocMsg(`Location is approximate (±${Math.round(pos.coords.accuracy)} m). Drag the pin if needed.`);
-      },
-      (err) => {
-        setLocating(false);
-        setLocMsg(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission is blocked. Allow it in your browser or phone settings, or tap the map to drop a pin."
-            : err.code === err.TIMEOUT
-              ? "Finding your location took too long. Try again, or tap the map to drop a pin."
-              : "Your location isn't available right now. Tap the map to drop a pin.",
-        );
-      },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 },
-    );
-  };
 
   const search = async () => {
     if (query.trim().length < 3) return;
@@ -201,12 +165,9 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
         {step === 0 && (
           <div className="grid md:grid-cols-[320px_1fr]">
             <div className="space-y-4 p-5 sm:p-6 md:border-r border-line">
-              <button type="button" onClick={useDevice} className="btn btn-primary w-full">
-                {locating ? <Loader2 className="size-4 animate-spin" /> : <Crosshair className="size-4" />} Use my current location
-              </button>
               <div className="relative">
                 <label htmlFor="addr" className="label">
-                  Or search an address
+                  Search an address
                 </label>
                 <div className="mt-1.5 flex gap-2">
                   <input
@@ -436,7 +397,7 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
               <p className="text-sm text-ink-3">Check your answers. Tap Edit to change anything.</p>
               <dl className="mt-4 divide-y divide-line">
                 <Row label="Location" onEdit={() => setStep(0)}>
-                  {method === "device" ? "Device location" : method === "search" ? "Address search" : "Map pin"} · {pt.lat.toFixed(4)},{" "}
+                  {method === "search" ? "Address search" : "Map pin"} · {pt.lat.toFixed(4)},{" "}
                   {pt.lon.toFixed(4)}
                 </Row>
                 <Row label="Observed" onEdit={() => setStep(1)}>

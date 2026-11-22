@@ -62,7 +62,7 @@ async function request(base: string, params: Record<string, string>, timeoutMs: 
  * Uses the forecast API (which also serves the last ~90 days) or the archive for older dates.
  * One retry; when boundary-layer height isn't available it retries without it.
  */
-export async function fetchHourly(
+async function fetchOpenMeteo(
   lat: number,
   lon: number,
   from: Date,
@@ -102,10 +102,99 @@ export async function fetchHourly(
       const cause = (e as { cause?: { code?: string; message?: string } })?.cause;
       lastErr = (e instanceof Error ? e.message : String(e)) + (cause ? ` (${cause.code ?? cause.message})` : "");
       if (/boundary_layer_height/i.test(lastErr)) vars = VARS.filter((v) => v !== "boundary_layer_height");
-      else if (attempt >= 1) break;
+      else if (/limit exceeded/i.test(lastErr)) {
+        openMeteoBlockedUntil = Date.now() + 60 * 60_000; // don't hammer it for an hour
+        break;
+      } else if (attempt >= 1) break;
     }
   }
   return { ok: false, source, error: lastErr };
+}
+
+let openMeteoBlockedUntil = 0;
+
+// ---------- Fallback: US National Weather Service (free, no key) ----------
+// Real observations from McKinney National Airport (KTKI), about 20 km SW of Melissa.
+// Covers roughly the last 7 days; no forecast hours.
+const NWS_STATION = "KTKI";
+const kmhToMph = (v: number | null) => (v == null ? null : Math.round(v * 0.621371 * 10) / 10);
+
+type NwsVal = { value: number | null } | undefined;
+type NwsObs = {
+  properties: {
+    timestamp: string;
+    windDirection?: NwsVal;
+    windSpeed?: NwsVal;
+    windGust?: NwsVal;
+    temperature?: NwsVal;
+    relativeHumidity?: NwsVal;
+    barometricPressure?: NwsVal;
+    precipitationLastHour?: NwsVal;
+  };
+};
+
+async function fetchNws(from: Date, to: Date): Promise<WeatherFetch> {
+  const source = `nws:${NWS_STATION}`;
+  const key = `nws|${from.toISOString().slice(0, 13)}|${to.toISOString().slice(0, 13)}`;
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.value;
+  const end = new Date(Math.min(to.getTime(), Date.now()));
+  const url = `https://api.weather.gov/stations/${NWS_STATION}/observations?start=${from.toISOString()}&end=${end.toISOString()}`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Aeris-community-odor-prototype/0.1", Accept: "application/geo+json" },
+      signal: AbortSignal.timeout(8000),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = (await res.json()) as { features: NwsObs[] };
+    const hours: WeatherHour[] = body.features
+      .map(({ properties: p }) => {
+        const speed = kmhToMph(p.windSpeed?.value ?? null);
+        const dir = p.windDirection?.value ?? null;
+        const precipMm = p.precipitationLastHour?.value ?? null;
+        return {
+          t: new Date(p.timestamp).toISOString(),
+          windSpeedMph: speed,
+          // Calm is reported as speed 0 with no direction; keep it so screening sees "calm".
+          windFromDeg: dir ?? (speed === 0 ? 0 : null),
+          gustMph: kmhToMph(p.windGust?.value ?? null),
+          tempF: p.temperature?.value == null ? null : Math.round((p.temperature.value * 9) / 5 + 32),
+          rh: p.relativeHumidity?.value ?? null,
+          pressureHpa: p.barometricPressure?.value == null ? null : p.barometricPressure.value / 100,
+          cloudCover: null,
+          precipIn: precipMm == null ? null : Math.round((precipMm / 25.4) * 100) / 100,
+          blhM: null,
+        };
+      })
+      .filter((h) => h.windSpeedMph != null)
+      .sort((a, b) => Date.parse(a.t) - Date.parse(b.t));
+    if (!hours.length) throw new Error("No observations for that time (station keeps about 7 days)");
+    const value: WeatherFetch = { ok: true, source, hours };
+    cache.set(key, { at: Date.now(), value });
+    return value;
+  } catch (e) {
+    return { ok: false, source, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/**
+ * Hourly weather for one point. Tries Open-Meteo first (model data, includes forecast);
+ * if it is unavailable (e.g. the shared daily limit on free hosting), falls back to
+ * National Weather Service station observations.
+ */
+export async function fetchHourly(lat: number, lon: number, from: Date, to: Date, opts: { timeoutMs?: number } = {}): Promise<WeatherFetch> {
+  let om: WeatherFetch | null = null;
+  if (Date.now() >= openMeteoBlockedUntil) {
+    om = await fetchOpenMeteo(lat, lon, from, to, opts);
+    if (om.ok) return om;
+  }
+  if (Date.now() - from.getTime() < 8 * 86_400_000) {
+    const nws = await fetchNws(from, to);
+    if (nws.ok) return nws;
+    return { ok: false, source: "open-meteo+nws", error: `${om ? om.error : "Open-Meteo paused (limit)"}; NWS: ${nws.error}` };
+  }
+  return om ?? { ok: false, source: "open-meteo", error: "Open-Meteo paused after hitting its daily limit" };
 }
 
 /** Weather around an observation: from 4 h before to 2 h after. */

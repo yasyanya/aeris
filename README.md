@@ -16,7 +16,7 @@ Everything runs on free services. Nothing needs an API key.
 | App | Next.js 16 (App Router, TypeScript), Tailwind CSS v4 |
 | Database | SQLite through Node's built-in `node:sqlite`, stored in one file at `data/aeris.db`. No native build is needed. |
 | Map | Leaflet + OpenStreetMap tiles, styled grey (or dark) with CSS |
-| Weather | [Open-Meteo](https://open-meteo.com) model data, licensed CC BY 4.0 |
+| Weather | [Open-Meteo](https://open-meteo.com) model data (CC BY 4.0), falling back automatically to [National Weather Service](https://www.weather.gov/documentation/services-web-api) observations from McKinney airport (KTKI) |
 | Geocoding | OpenStreetMap Nominatim, called through a server proxy |
 | Auth | Encrypted cookie sessions (iron-session) with bcrypt-hashed demo accounts |
 
@@ -67,7 +67,7 @@ Residents can also report anonymously. They get a receipt code such as `MEL-7K3Q
 ### Public (resident) side: light, calm, plain language
 
 - **Report an odor** (`/report`) is a 4-step wizard:
-  1. **Where:** device GPS, address search, or a map pin.
+  1. **Where:** address search or a map pin.
   2. **When:** the time and duration (using TCEQ duration buckets), and whether the odor is still happening.
   3. **What:** intensity 0–5 (mapped to TCEQ VL/L/M/S/VS), odor character, optional effects, and an optional suspected source.
   4. **Review:** an editable summary with every field linking back to its step, plus optional contact details with a consent box.

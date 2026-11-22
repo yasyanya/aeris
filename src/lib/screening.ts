@@ -57,7 +57,7 @@ export type ScreeningResult = {
 };
 
 const BASE_ASSUMPTIONS = [
-  "Wind is a modelled 10 m estimate on a ~3 km grid (Open-Meteo), not an on-site measurement.",
+  "Wind is a modelled 10 m estimate on a ~3 km grid (Open-Meteo) or, as a backup, readings from the McKinney airport station about 20 km away. Neither is an on-site measurement.",
   "Terrain, buildings and tree lines are ignored; air is assumed to travel in straight segments.",
   "Facility emission rates and on-site activities are unknown to this screen.",
   "Odors can linger after the wind shifts, and reported times may be approximate.",
