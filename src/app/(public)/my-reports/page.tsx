@@ -33,7 +33,7 @@ export default async function MyReports({ searchParams }: { searchParams: Promis
   return (
     <main className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-6 sm:py-10">
       <p className="eyebrow">Track your reports</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">My reports</h1>
+      <h1 className="mt-2 text-2xl font-semibold tracking-tight">My reports</h1>
 
       <form className="card mt-6 flex flex-col gap-3 p-5 sm:flex-row sm:items-end" action="/my-reports">
         <div className="flex-1">

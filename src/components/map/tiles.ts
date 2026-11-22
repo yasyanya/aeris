@@ -10,21 +10,6 @@ const OSM = {
 export const TILES = {
   light: { ...OSM, className: "tiles-muted" },
   dark: { ...OSM, className: "tiles-dark" },
-  satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Imagery &copy; Esri, Maxar, Earthstar Geographics",
-    className: "",
-  },
-  roads: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
-    attribution: "",
-    className: "tiles-faint",
-  },
-  labels: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Labels &copy; Esri",
-    className: "",
-  },
 } as const;
 
 export const FACILITY_GLYPH: Record<string, string> = {

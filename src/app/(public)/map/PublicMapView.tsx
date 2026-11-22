@@ -1,8 +1,8 @@
 "use client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Info, Layers, Lock, Pause, Play, X } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Info, Layers, Lock, X } from "lucide-react";
 import type { PublicCell } from "@/lib/aggregate";
 import { characterLabel, intensityInfo, INTENSITY, K_ANONYMITY, CATEGORY_MIN } from "@/lib/constants";
 import { bearingDeg, compass, distanceM } from "@/lib/geo";
@@ -59,7 +59,6 @@ export default function PublicMapView({
   const [showPaths, setShowPaths] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
   const ctrlRef = useRef<AbortController | null>(null);
   const rangeRef = useRef<Range>({ kind: "7d" });
 
@@ -83,29 +82,6 @@ export default function PublicMapView({
       .finally(() => ctrlRef.current === ctrl && setLoading(false));
   }, []);
 
-  // Playback through the last 30 days, Smell Pittsburgh-style (one day per tick).
-  useEffect(() => {
-    if (!playing) return;
-    const days = data.strip.map((d) => d.date);
-    const cur = rangeRef.current;
-    let i = cur.kind === "day" ? Math.max(0, days.indexOf(cur.date)) : 0;
-    const timer = setInterval(() => {
-      i++;
-      if (i >= days.length) {
-        setPlaying(false);
-        return;
-      }
-      changeRange({ kind: "day", date: days[i] });
-    }, 1100);
-    return () => clearInterval(timer);
-  }, [playing, data.strip, changeRange]);
-
-  const startStopPlayback = () => {
-    if (playing) return setPlaying(false);
-    if (rangeRef.current.kind !== "day" && data.strip[0]) changeRange({ kind: "day", date: data.strip[0].date });
-    setPlaying(true);
-  };
-
   const selected = data.cells.find((c) => c.id === selectedId) ?? null;
   const maxStrong = useMemo(() => Math.max(1, ...data.strip.map((d) => d.strong)), [data.strip]);
   const onSelect = useCallback((id: string | null) => setSelectedId(id), []);
@@ -120,7 +96,6 @@ export default function PublicMapView({
           role="tab"
           aria-selected={range.kind === k}
           onClick={() => {
-            setPlaying(false);
             changeRange({ kind: k });
           }}
           className={`flex-1 rounded-full px-3 h-9 text-[13px] font-medium transition whitespace-nowrap ${range.kind === k ? "bg-ink text-surface" : "text-ink-2 hover:text-ink"}`}
@@ -145,7 +120,7 @@ export default function PublicMapView({
       <dl className="mt-4 grid grid-cols-2 gap-4">
         <div>
           <dt className="label">Reports</dt>
-          <dd className="text-2xl font-semibold">{c.count}</dd>
+          <dd className="text-xl font-semibold">{c.count}</dd>
         </div>
         <div>
           <dt className="label">Median intensity</dt>
@@ -193,7 +168,7 @@ export default function PublicMapView({
           {range.kind === "day" && (
             <p className="mt-2 text-[13px] text-ink-2">
               Showing <strong>{rangeLabel}</strong>{" "}
-              <button className="text-primary" onClick={() => (setPlaying(false), changeRange({ kind: "7d" }))}>
+              <button className="text-primary" onClick={() => changeRange({ kind: "7d" })}>
                 · reset
               </button>
             </p>
@@ -292,13 +267,6 @@ export default function PublicMapView({
 
       {/* ---------- day strip timeline ---------- */}
       <div className="card absolute inset-x-3 bottom-3 z-[500] flex items-center gap-3 p-2.5 md:left-[412px] md:right-4 md:bottom-4">
-        <button
-          onClick={startStopPlayback}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-surface"
-          aria-label={playing ? "Pause playback" : "Play the last 30 days"}
-        >
-          {playing ? <Pause className="size-4" /> : <Play className="size-4 translate-x-px" />}
-        </button>
         <div className="flex-1 overflow-x-auto">
           <ol className="flex min-w-max gap-1">
             {data.strip.map((d) => {
@@ -308,7 +276,7 @@ export default function PublicMapView({
               return (
                 <li key={d.date}>
                   <button
-                    onClick={() => (setPlaying(false), changeRange({ kind: "day", date: d.date }))}
+                    onClick={() => changeRange({ kind: "day", date: d.date })}
                     title={`${fmtWeekday(dt)}: ${d.total} reports, ${d.strong} rated 3+`}
                     className={`flex w-9 flex-col items-center gap-1 rounded-lg py-1 ${sel ? "ring-2 ring-primary" : ""}`}
                   >
@@ -323,7 +291,7 @@ export default function PublicMapView({
             })}
           </ol>
         </div>
-        <p className="hidden lg:block w-28 shrink-0 text-[11px] leading-tight text-ink-3">Darker days had more reports rated 3+</p>
+        <p className="hidden lg:block w-28 shrink-0 text-[11px] leading-tight text-ink-3">Tap a day. Darker = more reports rated 3+</p>
       </div>
       {loading && <div className="absolute left-1/2 top-4 z-[700] -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-[12px] text-surface">Loading…</div>}
     </div>

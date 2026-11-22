@@ -1,10 +1,11 @@
 "use client";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MapContainer, Marker, Polygon, Polyline, TileLayer, Tooltip, useMap, ZoomControl } from "react-leaflet";
 import { MAP_CENTER, MAP_ZOOM, intensityInfo } from "@/lib/constants";
 import type { PublicCell } from "@/lib/aggregate";
 import { TILES } from "./tiles";
+import { useIsDark } from "@/components/theme";
 import { facilityIcon } from "./PinPickerMap";
 
 type Fac = { id: number; name: string; type: string; lat: number; lon: number; approx: boolean };
@@ -12,18 +13,6 @@ type Path = { facilityId: number; points: { lat: number; lon: number; minutes: n
 
 const RAMP = ["#b8bec6", "#63c174", "#f2cc3d", "#f39237", "#e0483e", "#8f2d6b"];
 export const rampColor = (v: number) => RAMP[Math.max(0, Math.min(5, Math.round(v)))];
-
-function usePrefersDark() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const set = () => setDark(mq.matches);
-    set();
-    mq.addEventListener("change", set);
-    return () => mq.removeEventListener("change", set);
-  }, []);
-  return dark;
-}
 
 function FitTo({ cell }: { cell: PublicCell | null }) {
   const map = useMap();
@@ -48,7 +37,7 @@ export default function PublicLeaflet({
   paths: Path[];
   showPaths: boolean;
 }) {
-  const dark = usePrefersDark();
+  const dark = useIsDark();
   const tiles = dark ? TILES.dark : TILES.light;
   const selected = cells.find((c) => c.id === selectedId) ?? null;
   return (

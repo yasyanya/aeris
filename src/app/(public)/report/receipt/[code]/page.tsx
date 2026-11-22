@@ -28,9 +28,9 @@ export default async function ReceiptPage({ params }: { params: Promise<{ code: 
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 h-8 text-sm font-medium text-primary">
             <CheckCircle2 className="size-4" /> Report saved
           </span>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">Thank you. Your receipt code is</h1>
+          <h1 className="mt-4 text-xl font-semibold tracking-tight">Thank you. Your receipt code is</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <span className="font-mono text-3xl sm:text-4xl font-semibold tracking-wider">{r.receiptCode}</span>
+            <span className="font-mono text-2xl sm:text-[28px] font-semibold tracking-wider">{r.receiptCode}</span>
             <CopyButton text={r.receiptCode} />
           </div>
           <p className="mt-3 max-w-xl text-sm text-ink-2">
@@ -38,7 +38,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ code: 
             so save it or scan the QR code.
           </p>
           <div
-            className={`mt-5 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm ${weatherOk ? "bg-surface-2" : "bg-[#fff4cc] text-[#6b5000] dark:bg-[#332a0a] dark:text-[#ffd966]"}`}
+            className={`mt-5 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm ${weatherOk ? "bg-surface-2" : "bg-warn-soft text-warn"}`}
           >
             {weatherOk ? <Wind className="mt-0.5 size-4 text-wind" /> : <AlertTriangle className="mt-0.5 size-4" />}
             <p>

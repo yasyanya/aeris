@@ -157,7 +157,7 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="eyebrow">New odor report</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{["Where did you notice it?", "When, and for how long?", "What did it smell like?", "Review and send"][step]}</h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">{["Where did you notice it?", "When, and for how long?", "What did it smell like?", "Review and send"][step]}</h1>
         </div>
         <p className="text-sm text-ink-3 shrink-0">
           Step {step + 1} of {STEPS.length}
@@ -465,7 +465,7 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
                 When you send, we save your answers first, then attach the estimated wind and weather for that time. If weather
                 can&apos;t be retrieved, your report is still saved and the weather is added later.
               </div>
-              {error && <p className="rounded-xl bg-[#fde8e8] px-3 py-2 text-sm text-danger dark:bg-[#3a1414]">{error}</p>}
+              {error && <p className="rounded-xl bg-warn-soft px-3 py-2 text-sm text-danger">{error}</p>}
             </div>
           </div>
         )}

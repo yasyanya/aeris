@@ -9,8 +9,8 @@ import { Attribution, WindArrow, windText } from "@/components/bits";
 export const dynamic = "force-dynamic";
 
 const HINT_STYLE = {
-  elevated: { label: "Odors more likely to linger", cls: "bg-[#fde8dc] text-[#9a3a0b] dark:bg-[#3a1d0e] dark:text-[#ffb48a]" },
-  moderate: { label: "Some odor-favourable conditions", cls: "bg-[#fff4cc] text-[#7a5b00] dark:bg-[#332a0a] dark:text-[#ffd966]" },
+  elevated: { label: "Odors more likely to linger", cls: "bg-warn-soft text-warn" },
+  moderate: { label: "Some odor-favourable conditions", cls: "bg-violet-soft text-violet" },
   low: { label: "Conditions favour dispersion", cls: "bg-primary-soft text-primary" },
   unknown: { label: "Conditions unknown", cls: "bg-surface-2 text-ink-3" },
 } as const;
@@ -27,7 +27,7 @@ export default async function Home() {
             style={{ background: "radial-gradient(circle, var(--primary-soft), transparent 70%)" }}
           />
           <p className="eyebrow">Melissa, Texas · Community prototype</p>
-          <h1 className="mt-4 max-w-xl text-[34px] sm:text-[46px] font-semibold leading-[1.05] tracking-tight">
+          <h1 className="mt-4 max-w-xl text-[28px] sm:text-[34px] font-semibold leading-[1.15] tracking-tight">
             Smell something? <span className="text-ink-3">Tell us in under a minute.</span>
           </h1>
           <p className="mt-4 max-w-lg text-ink-2 leading-relaxed">
@@ -45,15 +45,15 @@ export default async function Home() {
           <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-line pt-6 max-w-lg">
             <div>
               <dt className="label">Reports this week</dt>
-              <dd className="text-2xl font-semibold mt-1">{stats.week}</dd>
+              <dd className="text-xl font-semibold mt-1">{stats.week}</dd>
             </div>
             <div>
               <dt className="label">Reports answered</dt>
-              <dd className="text-2xl font-semibold mt-1">{stats.responded}</dd>
+              <dd className="text-xl font-semibold mt-1">{stats.responded}</dd>
             </div>
             <div>
               <dt className="label">Total reports</dt>
-              <dd className="text-2xl font-semibold mt-1">{stats.total}</dd>
+              <dd className="text-xl font-semibold mt-1">{stats.total}</dd>
             </div>
           </dl>
         </div>
@@ -71,7 +71,7 @@ export default async function Home() {
                   {cond.now.windFromDeg != null && <WindArrow fromDeg={cond.now.windFromDeg} className="size-12" />}
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold tracking-tight">{windText(cond.now.windSpeedMph, cond.now.windFromDeg)}</p>
+                  <p className="text-xl font-semibold tracking-tight">{windText(cond.now.windSpeedMph, cond.now.windFromDeg)}</p>
                   <p className="mt-1 text-sm text-ink-3">
                     {cond.now.tempF != null && `${Math.round(cond.now.tempF)}°F · `}
                     {cond.now.gustMph != null && `gusts ${Math.round(cond.now.gustMph)} mph · `}

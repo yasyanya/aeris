@@ -72,7 +72,7 @@ export function ReportCard({ r }: { r: ResidentReportView }) {
               <li key={i} className="flex gap-3">
                 <span
                   className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full ${
-                    e.type === "responded" ? "bg-ink text-lime" : "bg-primary-soft text-primary"
+                    e.type === "responded" ? "bg-ink text-surface" : "bg-primary-soft text-primary"
                   }`}
                 >
                   {e.type === "responded" ? <MessageSquareText className="size-3.5" /> : i === r.timeline.length - 1 && !responded ? <CircleDot className="size-3.5" /> : <Check className="size-3.5" />}

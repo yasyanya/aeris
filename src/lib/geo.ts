@@ -121,3 +121,12 @@ export function hexPolygon(id: string, size: number): [number, number][] {
   }
   return pts;
 }
+
+const DOWNTOWN_MELISSA: LatLon = { lat: 33.2862, lon: -96.5722 };
+/** Human-friendly approximate place, e.g. "1.2 mi NE of downtown Melissa". */
+export function describePlace(lat: number, lon: number): string {
+  const p = { lat, lon };
+  const d = distanceM(DOWNTOWN_MELISSA, p);
+  if (d < 600) return "Downtown Melissa";
+  return `${(d / 1609.34).toFixed(1)} mi ${compass(bearingDeg(DOWNTOWN_MELISSA, p))} of downtown`;
+}

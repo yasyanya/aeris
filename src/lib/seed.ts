@@ -8,7 +8,7 @@ import type { WeatherHour } from "./wind";
 import { windAt } from "./wind";
 import { TIMEZONE } from "./constants";
 
-export const DEMO_PASSWORD = "demo1234";
+export const DEMO_PASSWORD = "solvefortomorrow";
 export const DEMO_USERS = [
   { email: "resident@demo.aeris", name: "Demo Resident", role: "resident" },
   { email: "staff@demo.aeris", name: "Jordan Lee", role: "staff" },

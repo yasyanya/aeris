@@ -15,7 +15,7 @@ Everything runs on free services. Nothing needs an API key.
 | --- | --- |
 | App | Next.js 16 (App Router, TypeScript), Tailwind CSS v4 |
 | Database | SQLite through Node's built-in `node:sqlite`, stored in one file at `data/aeris.db`. No native build is needed. |
-| Map | Leaflet + OpenStreetMap tiles, styled grey with CSS. Esri World Imagery is used for the staff satellite view. |
+| Map | Leaflet + OpenStreetMap tiles, styled grey (or dark) with CSS |
 | Weather | [Open-Meteo](https://open-meteo.com) model data, licensed CC BY 4.0 |
 | Geocoding | OpenStreetMap Nominatim, called through a server proxy |
 | Auth | Encrypted cookie sessions (iron-session) with bcrypt-hashed demo accounts |
@@ -50,13 +50,13 @@ Free instances behave like this:
 
 ### Demo accounts
 
-The password for all three is `demo1234`.
+The password for all three is `solvefortomorrow`.
 
-| Role | Email | Sees |
+| Role | Email | Can do |
 | --- | --- | --- |
-| Resident | `resident@demo.aeris` | Their own reports under **My reports** |
-| Staff investigator | `staff@demo.aeris` | Staff console. Can log patrols and checks and draft responses. |
-| Manager | `manager@demo.aeris` | Everything staff sees, plus publishing responses and editing facilities |
+| Resident | `resident@demo.aeris` | See their own reports under **My reports** |
+| Staff investigator | `staff@demo.aeris` | Add investigation notes and draft responses |
+| Manager | `manager@demo.aeris` | Everything staff can do, plus approve and publish responses |
 
 Residents can also report anonymously. They get a receipt code such as `MEL-7K3Q-92XH` to track the report.
 
@@ -78,36 +78,32 @@ Residents can also report anonymously. They get a receipt code such as `MEL-7K3Q
   - A timestamped regional wind arrow is shown.
   - An optional "air-movement estimate" shows a dashed forward path from each facility for the next 2 hours, based on forecast wind.
   - Date ranges are 24 h, 7 days or 30 days.
-  - A Smell Pittsburgh-style daily strip shows each day, with playback.
+  - A Smell Pittsburgh-style daily strip shows each day; tap a day to filter.
   - Tapping an area shows its report count, median intensity, and eligible odor categories.
 - **My reports** (`/my-reports`): look up a report by receipt code, or sign in to list your own reports. Each report shows a progress rail, a public timeline, and the published response.
 - **Learn** (`/learn`) has five short explainers (map, wind, screening, process, privacy), an FAQ, and resource cards linking to NTMWD and TCEQ pages.
 
-### Staff side: dark, analytical, inspired by EVS
+### Staff side: simple, light or dark
 
-- **Dashboard** (`/staff`):
-  - An "Odor event detected" card, triggered when there are 3 or more reports rated 3+ within 60 minutes and 2 km of each other. This is the crowd-triggered alert idea from Smell Pittsburgh.
-  - KPIs.
-  - A "needs attention" table.
-  - An intensity histogram.
-  - Drafts waiting for a manager.
-- **Analysis map** (`/staff/map`):
-  - Exact report points on satellite or dark basemaps.
-  - A 5×5 modelled wind field.
-  - Clicking a report shows its **back-trajectory**: a white path, a violet uncertainty band, and dots every 20 minutes.
-  - It also shows the **upwind cone**.
-  - **Shift-click** several reports to see which facilities they have in common.
-  - A playback scrubber shows a rolling 6-hour window.
-- **Report detail** (`/staff/reports/[id]`) shows:
-  - The map.
-  - The screening result with reasons, assumptions and missing information.
-  - Hourly weather context (wind, pressure, mixing height).
-  - Contact details, only if the resident consented.
-  - A TCEQ-style patrol and operational-check log.
-  - Status controls.
-  - The response workflow: staff draft, a manager approves and publishes. The manager can also publish to related nearby reports.
-- **Facilities** (`/staff/facilities`) lets managers edit names, coordinates and public visibility. Saving re-runs screening for the last 30 days.
-- **CSV export** (`/api/staff/export`) produces a regulator-friendly file with reports, weather and screening. It guards against spreadsheet formula injection.
+Staff see one **Reports** screen (`/staff`). On the left is a list with two tabs, **Needs action** and **Answered**. On the right is a map. Selecting a report shows:
+
+- Its details card.
+- The estimated path the air took to reach the spot (a dashed line).
+- Which facilities fit the wind.
+
+An orange **"Possible odor event"** notice appears when there are 3 or more reports rated 3+ within an hour and 2 km of each other. This is the crowd-triggered alert idea from Smell Pittsburgh.
+
+Each report page (`/staff/reports/[id]`) has just what is needed:
+
+- What the resident reported.
+- The likely source, with a short "how this was worked out" explanation.
+- The weather at that time.
+- **Investigation notes**, each with an optional "odor confirmed on site" flag.
+- **Response**: staff save a draft, and a **manager approves and publishes** it.
+
+Status changes on its own. Opening a report sets it to *Under review*, adding a note sets it to *Investigation underway*, and publishing sets it to *Response published*. The resident sees each step in **My reports**.
+
+The theme follows the device. The toggle (Auto, Light, Dark) overrides it on the public site and the staff screens. On phones the toggle is on the Learn page.
 
 ## Source screening: how it works
 
@@ -127,7 +123,6 @@ The screening logic is in `src/lib/screening.ts` and covered by `src/lib/screeni
    - A note when several facilities lie within 15° of each other as seen from the observer, because wind alone can't tell them apart.
    - The assumptions used.
    - Any missing information.
-6. **Corroboration.** Across several selected reports, the app counts how many reports' screens list each facility.
 
 The public side never shows source attribution. Staff see it as a *screening aid*. Patrols confirm what is actually happening, in line with TCEQ's requirement for field verification.
 
@@ -159,8 +154,8 @@ The public side never shows source attribution. Staff see it as a *screening aid
 ```
 src/lib/            domain logic: geo math, wind interpolation, Open-Meteo client, screening, aggregation, DB, auth, seed
 src/app/(public)/   home, report wizard + receipt, community map, my reports, learn
-src/app/staff/      dashboard, analysis map, queue, report detail, facilities, server actions
-src/app/api/        reports (POST), map aggregate, geocode proxy, staff windfield/screening/export, cron weather retry
+src/app/staff/      reports inbox (list + map), report page, server actions
+src/app/api/        reports (POST), map aggregate, geocode proxy, cron weather retry
 src/components/     shared UI and Leaflet map components
 design-refs/        design inspiration screenshots (local only, not committed)
 scripts/seed.ts     reset and seed the database
@@ -168,7 +163,7 @@ scripts/seed.ts     reset and seed the database
 
 ## Before production
 
-- **Facility coordinates.** The seeded coordinates are **approximate**. Sister Grove could be off by 1–3 km. Verify them in the Facilities page.
+- **Facility coordinates.** The seeded coordinates are **approximate**. Sister Grove could be off by 1–3 km. They are set in `src/lib/seed.ts`.
 - **Weather terms.** Open-Meteo's free tier is for non-commercial use. A public agency deployment should check the terms or use a paid plan. Also attribute the data, as the app already does in its footer.
 - **Map tiles.** OpenStreetMap's public tiles are for light use. For production, use a tile provider or self-host tiles (for example, Protomaps PMTiles).
 - **Secrets.** Set `SESSION_SECRET` (32+ characters). Set `CRON_SECRET` and schedule `GET /api/cron/retry-weather?key=…` every 15 minutes.

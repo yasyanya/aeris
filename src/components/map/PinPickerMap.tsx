@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents, Tooltip } from "react-leaflet";
 import { MAP_CENTER, MAP_ZOOM } from "@/lib/constants";
 import { TILES, FACILITY_GLYPH } from "./tiles";
+import { useIsDark } from "@/components/theme";
 
 type Pt = { lat: number; lon: number };
 type Fac = { id: number; name: string; type: string; lat: number; lon: number };
@@ -57,9 +58,10 @@ export default function PinPickerMap({
     }),
     [onChange],
   );
+  const tiles = useIsDark() ? TILES.dark : TILES.light;
   return (
     <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM + 1} className="h-full w-full" zoomControl={false} attributionControl>
-      <TileLayer url={TILES.light.url} attribution={TILES.light.attribution} className={TILES.light.className} />
+      <TileLayer key={tiles.className} url={tiles.url} attribution={tiles.attribution} className={tiles.className} />
       <ClickToPlace onPick={onChange} />
       <FlyTo point={flyTarget} />
       {facilities.map((f) => (

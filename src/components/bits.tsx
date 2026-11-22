@@ -6,12 +6,10 @@ export function IntensityDot({ value, className = "size-3" }: { value: number; c
   return <span className={`inline-block shrink-0 rounded-full ${className}`} style={{ background: intensityInfo(value).color }} aria-hidden />;
 }
 
-export function IntensityPill({ value, dark = false }: { value: number; dark?: boolean }) {
+export function IntensityPill({ value }: { value: number }) {
   const info = intensityInfo(value);
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 h-6 text-[12px] font-medium ${dark ? "bg-s-panel-2 text-s-ink" : "bg-surface-2 text-ink"}`}
-    >
+    <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-surface-2 px-2.5 text-[12px] font-medium text-ink">
       <IntensityDot value={value} className="size-2.5" />
       {Number.isInteger(value) ? value : value.toFixed(1)} · {info.short}
     </span>
@@ -36,24 +34,13 @@ export function windText(speedMph: number | null | undefined, fromDeg: number | 
 
 const STATUS_STYLE: Record<string, string> = {
   received: "bg-surface-2 text-ink-2 border border-line",
-  under_review: "bg-[#efe9ff] text-[#5b3fd6] dark:bg-[#2a2350] dark:text-[#c7b8ff]",
-  investigating: "bg-lime text-[#1d2a00]",
-  responded: "bg-ink text-lime",
+  under_review: "bg-violet-soft text-violet",
+  investigating: "bg-primary-soft text-primary",
+  responded: "bg-ink text-surface",
   closed: "bg-surface-2 text-ink-3 border border-line",
 };
 export function StatusBadge({ status }: { status: string }) {
   return <span className={`badge ${STATUS_STYLE[status] ?? STATUS_STYLE.received}`}>{statusLabel(status)}</span>;
-}
-
-const S_STATUS_STYLE: Record<string, string> = {
-  received: "bg-s-accent/15 text-s-accent",
-  under_review: "bg-violet/20 text-[#c7b8ff]",
-  investigating: "bg-lime/15 text-lime",
-  responded: "bg-s-cyan/15 text-s-cyan",
-  closed: "bg-s-panel-2 text-s-ink-3",
-};
-export function StaffStatusBadge({ status }: { status: string }) {
-  return <span className={`badge ${S_STATUS_STYLE[status] ?? S_STATUS_STYLE.received}`}>{statusLabel(status)}</span>;
 }
 
 export function Attribution({ className = "" }: { className?: string }) {

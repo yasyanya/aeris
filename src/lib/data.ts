@@ -1,7 +1,7 @@
 import "server-only";
 import { getDb } from "./db";
 import { aggregateCells, dailyStrip, type AggInput } from "./aggregate";
-import { distanceM } from "./geo";
+import { describePlace, distanceM } from "./geo";
 import { fetchAround } from "./weather";
 import { loadFacilities, runScreening, saveWeather, addTimeline } from "./reports-core";
 import type { ScreeningResult } from "./screening";
@@ -185,8 +185,17 @@ export function staffReportList(f: StaffFilters = {}) {
       windSpeedMph: (r.wind_speed_mph as number) ?? null,
       windFromDeg: (r.wind_from_deg as number) ?? null,
       verdict: (r.verdict as string) ?? null,
-      topCandidate: s?.candidates[0]?.name ?? null,
-      candidateCount: s?.candidates.filter((c) => c.level !== "nearby").length ?? 0,
+      place: describePlace(r.lat as number, r.lon as number),
+      screening: s
+        ? {
+            headline: s.headline,
+            verdict: s.verdict,
+            candidates: s.candidates
+              .filter((c) => c.level !== "nearby")
+              .map((c) => ({ facilityId: c.facilityId, name: c.name, level: c.level, distanceM: c.distanceM })),
+            trajectory: s.trajectory,
+          }
+        : null,
     };
   });
 }
@@ -295,30 +304,6 @@ export function staffReportDetail(id: number) {
 }
 export type StaffReportDetail = NonNullable<ReturnType<typeof staffReportDetail>>;
 
-export function staffKpis() {
-  const d = db();
-  const since24 = new Date(Date.now() - 86_400_000).toISOString();
-  const since7 = new Date(Date.now() - 7 * 86_400_000).toISOString();
-  const n = (sql: string, ...a: string[]) => (d.prepare(sql).get(...a) as { n: number }).n;
-  const firstResp = d
-    .prepare(
-      `SELECT r.created_at, MIN(t.at) AS first_at FROM reports r JOIN timeline_events t ON t.report_id=r.id AND t.type<>'received' AND t.is_public=1
-       WHERE r.created_at>=? GROUP BY r.id`,
-    )
-    .all(new Date(Date.now() - 30 * 86_400_000).toISOString()) as { created_at: string; first_at: string }[];
-  const hrs = firstResp.map((x) => (Date.parse(x.first_at) - Date.parse(x.created_at)) / 3_600_000).sort((a, b) => a - b);
-  const medianHrs = hrs.length ? hrs[Math.floor(hrs.length / 2)] : null;
-  return {
-    last24: n("SELECT COUNT(*) n FROM reports WHERE observed_at>=?", since24),
-    newUnreviewed: n("SELECT COUNT(*) n FROM reports WHERE status='received'"),
-    investigating: n("SELECT COUNT(*) n FROM reports WHERE status IN ('under_review','investigating')"),
-    drafts: n("SELECT COUNT(*) n FROM responses WHERE status='draft'"),
-    week: n("SELECT COUNT(*) n FROM reports WHERE observed_at>=?", since7),
-    weatherFailed: n("SELECT COUNT(*) n FROM weather_snapshots WHERE fetch_status<>'ok'"),
-    medianFirstResponseHrs: medianHrs,
-  };
-}
-
 /** Crowd-triggered alert: ≥3 reports with intensity ≥3 within 60 min and 2 km (in the last 24 h). */
 export function clusterAlerts(hours = 24) {
   const rows = db()
@@ -354,17 +339,6 @@ export function clusterAlerts(hours = 24) {
 
 export function allFacilities() {
   return loadFacilities(db());
-}
-
-export function exportRows() {
-  return db()
-    .prepare(
-      `SELECT r.receipt_code, r.observed_at, r.created_at, r.lat, r.lon, r.intensity, r.characters, r.character_other, r.duration, r.ongoing,
-         r.symptoms, r.suspected_source, r.status, w.fetch_status AS weather_status, w.source AS weather_source, w.sample_time,
-         w.wind_speed_mph, w.wind_from_deg, w.temp_f, w.rh, w.pressure_hpa, w.cloud_cover, w.precip_in, w.blh_m, s.verdict, s.result_json
-       FROM reports r LEFT JOIN weather_snapshots w ON w.report_id=r.id LEFT JOIN screening_results s ON s.report_id=r.id ORDER BY r.observed_at`,
-    )
-    .all() as Record<string, unknown>[];
 }
 
 export { addTimeline };

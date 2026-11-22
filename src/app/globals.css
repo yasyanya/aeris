@@ -1,24 +1,35 @@
 @import "tailwindcss";
 
-/* ---------- Design tokens (see plan: "Design direction") ---------- */
+/* Light/dark is driven by the OS preference, or forced by <html data-theme="light|dark"> (theme toggle). */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/* ---------- Design tokens ---------- */
 :root {
-  --canvas: #f4f5f6;
+  --canvas: #f2f3f4;
   --surface: #ffffff;
-  --surface-2: #f7f8f9;
-  --ink: #111418;
-  --ink-2: #4a525c;
-  --ink-3: #7c848e;
-  --line: #e4e7eb;
+  --surface-2: #f6f7f8;
+  --ink: #16191d;
+  --ink-2: #4d5560;
+  --ink-3: #848b95;
+  --line: #e6e8eb;
   --primary: #0f8c7a;
   --primary-ink: #ffffff;
-  --primary-soft: #e3f4f1;
+  --primary-soft: #e2f3ef;
   --violet: #7c5cff;
-  --lime: #c6f432;
-  --navy: #0f1b3d;
+  --violet-soft: #efebff;
   --wind: #2f6fe4;
   --warn: #e0662b;
+  --warn-soft: #fdeee5;
   --danger: #d33a3a;
-  --ok: #2c9a5b;
   /* intensity ramp 0–5 */
   --i0: #b8bec6;
   --i1: #63c174;
@@ -26,35 +37,43 @@
   --i3: #f39237;
   --i4: #e0483e;
   --i5: #8f2d6b;
-  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.08);
-
-  /* staff (always dark) */
-  --s-bg: #0e1014;
-  --s-panel: #15181e;
-  --s-panel-2: #1c2028;
-  --s-line: #2a2f39;
-  --s-ink: #eef0f3;
-  --s-ink-2: #a3aab5;
-  --s-ink-3: #6c7380;
-  --s-accent: #ff6a2b;
-  --s-cyan: #3cc6e8;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 6px 20px rgb(16 24 40 / 0.06);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --canvas: #0f1114;
     --surface: #171a1f;
-    --surface-2: #1d2127;
+    --surface-2: #1e2228;
     --ink: #eef0f3;
     --ink-2: #b4bbc5;
     --ink-3: #828a95;
     --line: #2a2f37;
     --primary: #22b39d;
     --primary-ink: #04201b;
-    --primary-soft: #0f2c28;
-    --navy: #0b1430;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+    --primary-soft: #11302b;
+    --violet-soft: #251f45;
+    --warn-soft: #3a2113;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --canvas: #0f1114;
+  --surface: #171a1f;
+  --surface-2: #1e2228;
+  --ink: #eef0f3;
+  --ink-2: #b4bbc5;
+  --ink-3: #828a95;
+  --line: #2a2f37;
+  --primary: #22b39d;
+  --primary-ink: #04201b;
+  --primary-soft: #11302b;
+  --violet-soft: #251f45;
+  --warn-soft: #3a2113;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -69,25 +88,14 @@
   --color-primary-ink: var(--primary-ink);
   --color-primary-soft: var(--primary-soft);
   --color-violet: var(--violet);
-  --color-lime: var(--lime);
-  --color-navy: var(--navy);
+  --color-violet-soft: var(--violet-soft);
   --color-wind: var(--wind);
   --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
   --color-danger: var(--danger);
-  --color-ok: var(--ok);
-  --color-s-bg: var(--s-bg);
-  --color-s-panel: var(--s-panel);
-  --color-s-panel-2: var(--s-panel-2);
-  --color-s-line: var(--s-line);
-  --color-s-ink: var(--s-ink);
-  --color-s-ink-2: var(--s-ink-2);
-  --color-s-ink-3: var(--s-ink-3);
-  --color-s-accent: var(--s-accent);
-  --color-s-cyan: var(--s-cyan);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --shadow-card: var(--shadow);
-  --radius-panel: 20px;
 }
 
 html,
@@ -97,6 +105,7 @@ body {
 }
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 15px;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -146,24 +155,14 @@ body {
     @apply inline-flex size-11 items-center justify-center rounded-full bg-surface text-ink shadow-card border border-line/60
       hover:bg-surface-2 transition;
   }
-
-  /* staff dark variants */
-  .s-card {
-    @apply rounded-2xl bg-s-panel border border-s-line;
+  .segmented {
+    @apply flex gap-1 rounded-full bg-surface-2 p-1;
   }
-  .s-input {
-    @apply w-full rounded-lg border border-s-line bg-s-panel-2 px-3 h-10 text-sm text-s-ink placeholder:text-s-ink-3
-      focus:outline-2 focus:outline-s-cyan focus:border-transparent;
+  .segmented > * {
+    @apply flex-1 rounded-full h-9 px-3 text-[13px] font-medium text-ink-2 transition inline-flex items-center justify-center;
   }
-  .s-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 h-9 text-[13px] font-medium transition
-      border border-s-line text-s-ink hover:bg-s-panel-2 disabled:opacity-50;
-  }
-  .s-btn-primary {
-    @apply border-transparent bg-s-ink text-s-bg hover:opacity-90;
-  }
-  .s-label {
-    @apply text-[11px] uppercase tracking-[0.12em] text-s-ink-3;
+  .segmented > [aria-selected="true"] {
+    @apply bg-ink text-surface;
   }
 }
 
@@ -175,16 +174,16 @@ body {
 .leaflet-control-attribution {
   font-size: 10px !important;
   border-radius: 8px 0 0 0;
+  background: color-mix(in srgb, var(--surface) 80%, transparent) !important;
+  color: var(--ink-3);
 }
-.staff-map .leaflet-container {
-  background: #0b0d10;
+.leaflet-control-attribution a {
+  color: var(--ink-2);
 }
-.staff-map .leaflet-control-attribution {
-  background: rgb(14 16 20 / 0.75) !important;
-  color: #8b93a0;
-}
-.staff-map .leaflet-control-attribution a {
-  color: #b9c0cb;
+.leaflet-bar a {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
 }
 .leaflet-div-icon {
   background: transparent;
@@ -203,23 +202,12 @@ body {
   display: none;
 }
 
-@keyframes pulse-ring {
-  0% { transform: scale(0.6); opacity: 0.7; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-.pulse-ring {
-  animation: pulse-ring 1.8s ease-out infinite;
-}
-
-/* Free OSM tiles restyled to the muted greyscale look of the design references */
+/* Free OSM tiles restyled to a muted greyscale look */
 .tiles-muted {
   filter: grayscale(1) contrast(0.88) brightness(1.06) saturate(0);
 }
 .tiles-dark {
   filter: grayscale(1) invert(1) contrast(0.82) brightness(0.78);
-}
-.tiles-faint {
-  opacity: 0.55;
 }
 
 /* Keep Leaflet's bottom controls clear of the public map's day strip */
