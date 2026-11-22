@@ -1,77 +1,66 @@
 "use client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
-type Theme = "system" | "light" | "dark";
+// Light is the default. Dark mode is only used when the visitor chooses it (saved per browser).
+type Theme = "light" | "dark";
 const KEY = "aeris-theme";
 
-/** Runs before paint (inlined in <head>) so the saved theme never flashes. */
-export const THEME_SCRIPT = `try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+/** Runs before paint (inlined in <head>) so a saved dark choice never flashes light. */
+export const THEME_SCRIPT = `try{if(localStorage.getItem("${KEY}")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}`;
 
 function readTheme(): Theme {
   try {
-    const t = localStorage.getItem(KEY);
-    return t === "light" || t === "dark" ? t : "system";
+    return localStorage.getItem(KEY) === "dark" ? "dark" : "light";
   } catch {
-    return "system";
+    return "light";
   }
 }
 
 function applyTheme(t: Theme) {
-  if (t === "system") delete document.documentElement.dataset.theme;
-  else document.documentElement.dataset.theme = t;
+  if (t === "dark") document.documentElement.dataset.theme = "dark";
+  else delete document.documentElement.dataset.theme;
   try {
-    if (t === "system") localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, t);
+    if (t === "dark") localStorage.setItem(KEY, "dark");
+    else localStorage.removeItem(KEY);
   } catch {}
   window.dispatchEvent(new Event("aeris-theme"));
 }
 
 export function ThemeToggle({ className = "", iconOnly = false }: { className?: string; iconOnly?: boolean }) {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => {
     // Sync with what the head script applied (external storage → state).
-    const t = readTheme();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (t !== "system") setTheme(t);
+    if (readTheme() === "dark") setTheme("dark");
   }, []);
-  const next: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
-  const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
-  const label = theme === "light" ? "Light" : theme === "dark" ? "Dark" : "Auto";
+  const Icon = theme === "dark" ? Moon : Sun;
+  const label = theme === "dark" ? "Dark" : "Light";
   return (
     <button
       type="button"
       onClick={() => {
-        const t = next[theme];
+        const t: Theme = theme === "dark" ? "light" : "dark";
         setTheme(t);
         applyTheme(t);
       }}
-      className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 h-9 text-[13px] text-ink-2 hover:text-ink ${className}`}
-      aria-label={`Theme: ${label}. Click to change.`}
-      title="Change theme"
+      className={`inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-[13px] text-ink-2 hover:text-ink ${className}`}
+      aria-label={`${label} mode. Switch to ${theme === "dark" ? "light" : "dark"} mode.`}
+      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
-      <Icon className="size-4" /> {!iconOnly && label}
+      <Icon className={iconOnly ? "size-[18px] shrink-0" : "size-4 shrink-0"} />
+      {!iconOnly && label}
     </button>
   );
 }
 
 function subscribe(cb: () => void) {
-  const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  mq.addEventListener("change", cb);
   window.addEventListener("aeris-theme", cb);
-  return () => {
-    mq.removeEventListener("change", cb);
-    window.removeEventListener("aeris-theme", cb);
-  };
+  return () => window.removeEventListener("aeris-theme", cb);
 }
-function isDarkNow() {
-  const forced = document.documentElement.dataset.theme;
-  if (forced === "dark") return true;
-  if (forced === "light") return false;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
+const isDarkNow = () => document.documentElement.dataset.theme === "dark";
 
-/** True when the page is currently rendered in dark mode (used to pick map tiles). */
+/** True when the page is currently in dark mode (used to pick map tiles). */
 export function useIsDark() {
   return useSyncExternalStore(subscribe, isDarkNow, () => false);
 }

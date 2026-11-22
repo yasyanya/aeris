@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowUpRight, Compass, Eye, FileSearch, Lock, MessagesSquare, Wind } from "lucide-react";
 import { INTENSITY, K_ANONYMITY, RESOURCES, TCEQ_COMPLAINT_URL } from "@/lib/constants";
 import { WindArrow } from "@/components/bits";
-import { ThemeToggle } from "@/components/theme";
 
 export const metadata = { title: "Learn" };
 
@@ -36,10 +35,7 @@ const FAQ = [
 export default function LearnPage() {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
-      <div className="flex items-center justify-between">
-        <p className="eyebrow">Learn</p>
-        <ThemeToggle className="md:hidden" />
-      </div>
+      <p className="eyebrow">Learn</p>
       <h1 className="mt-2 max-w-2xl text-2xl sm:text-[28px] font-semibold tracking-tight">How Aeris works</h1>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">

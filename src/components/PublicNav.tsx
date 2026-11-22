@@ -64,6 +64,7 @@ export function MobileAccountBar({ user }: { user: { name: string; role: string 
   const isStaff = user && (user.role === "staff" || user.role === "manager");
   return (
     <div className="sticky top-0 z-[1100] flex h-12 items-center justify-end gap-2 border-b border-line/70 bg-canvas/90 px-4 backdrop-blur md:hidden">
+      <ThemeToggle iconOnly className="mr-auto h-8 w-8 justify-center px-0" />
       {user ? (
         <>
           {isStaff && (

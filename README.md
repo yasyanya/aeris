@@ -104,7 +104,7 @@ Each report page (`/staff/reports/[id]`) has just what is needed:
 
 Status changes on its own. Opening a report sets it to *Under review*, adding a note sets it to *Investigation underway*, and publishing sets it to *Response published*. The resident sees each step in **My reports**.
 
-The theme follows the device. The toggle (Auto, Light, Dark) overrides it on the public site and the staff screens. On phones the toggle is on the Learn page.
+Light mode is the default. The sun/moon button switches to dark mode and remembers the choice in that browser. On a computer the button is in the top bar (and the staff sidebar); on phones it is the sun icon at the top left.
 
 ## Source screening: how it works
 
