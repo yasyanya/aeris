@@ -94,12 +94,13 @@ export async function fetchHourly(
   let vars = VARS;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const body = await request(base, params(vars), opts.timeoutMs ?? 5000);
+      const body = await request(base, params(vars), opts.timeoutMs ?? 8000);
       const value: WeatherFetch = { ok: true, source, hours: parseHourly(body.hourly) };
       cache.set(key, { at: Date.now(), value });
       return value;
     } catch (e) {
-      lastErr = e instanceof Error ? e.message : String(e);
+      const cause = (e as { cause?: { code?: string; message?: string } })?.cause;
+      lastErr = (e instanceof Error ? e.message : String(e)) + (cause ? ` (${cause.code ?? cause.message})` : "");
       if (/boundary_layer_height/i.test(lastErr)) vars = VARS.filter((v) => v !== "boundary_layer_height");
       else if (attempt >= 1) break;
     }
