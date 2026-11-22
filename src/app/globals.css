@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens (see plan: "Design direction") ---------- */
+:root {
+  --canvas: #f4f5f6;
+  --surface: #ffffff;
+  --surface-2: #f7f8f9;
+  --ink: #111418;
+  --ink-2: #4a525c;
+  --ink-3: #7c848e;
+  --line: #e4e7eb;
+  --primary: #0f8c7a;
+  --primary-ink: #ffffff;
+  --primary-soft: #e3f4f1;
+  --violet: #7c5cff;
+  --lime: #c6f432;
+  --navy: #0f1b3d;
+  --wind: #2f6fe4;
+  --warn: #e0662b;
+  --danger: #d33a3a;
+  --ok: #2c9a5b;
+  /* intensity ramp 0–5 */
+  --i0: #b8bec6;
+  --i1: #63c174;
+  --i2: #f2cc3d;
+  --i3: #f39237;
+  --i4: #e0483e;
+  --i5: #8f2d6b;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.08);
+
+  /* staff (always dark) */
+  --s-bg: #0e1014;
+  --s-panel: #15181e;
+  --s-panel-2: #1c2028;
+  --s-line: #2a2f39;
+  --s-ink: #eef0f3;
+  --s-ink-2: #a3aab5;
+  --s-ink-3: #6c7380;
+  --s-accent: #ff6a2b;
+  --s-cyan: #3cc6e8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #0f1114;
+    --surface: #171a1f;
+    --surface-2: #1d2127;
+    --ink: #eef0f3;
+    --ink-2: #b4bbc5;
+    --ink-3: #828a95;
+    --line: #2a2f37;
+    --primary: #22b39d;
+    --primary-ink: #04201b;
+    --primary-soft: #0f2c28;
+    --navy: #0b1430;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
+  --color-violet: var(--violet);
+  --color-lime: var(--lime);
+  --color-navy: var(--navy);
+  --color-wind: var(--wind);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --color-s-bg: var(--s-bg);
+  --color-s-panel: var(--s-panel);
+  --color-s-panel-2: var(--s-panel-2);
+  --color-s-line: var(--s-line);
+  --color-s-ink: var(--s-ink);
+  --color-s-ink-2: var(--s-ink-2);
+  --color-s-ink-3: var(--s-ink-3);
+  --color-s-accent: var(--s-accent);
+  --color-s-cyan: var(--s-cyan);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --shadow-card: var(--shadow);
+  --radius-panel: 20px;
+}
+
+html,
+body {
+  background: var(--canvas);
+  color: var(--ink);
+}
+body {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Component primitives ---------- */
+@layer components {
+  .card {
+    @apply rounded-[20px] bg-surface shadow-card border border-line/60;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 h-11 text-sm font-medium transition
+      disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  }
+  .btn-primary {
+    @apply bg-ink text-surface hover:opacity-90;
+  }
+  .btn-accent {
+    @apply bg-primary text-primary-ink hover:brightness-110;
+  }
+  .btn-ghost {
+    @apply border border-line bg-surface text-ink hover:bg-surface-2;
+  }
+  .btn-sm {
+    @apply h-9 px-4 text-[13px];
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 h-9 text-[13px] text-ink-2
+      transition hover:border-ink-3 cursor-pointer select-none;
+  }
+  .chip[data-on="true"],
+  .chip:has(input:checked) {
+    @apply border-ink bg-ink text-surface;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+  }
+  .label {
+    @apply text-[12px] text-ink-3;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 h-11 text-sm text-ink placeholder:text-ink-3
+      focus:outline-2 focus:outline-primary focus:border-transparent;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3;
+  }
+  .icon-btn {
+    @apply inline-flex size-11 items-center justify-center rounded-full bg-surface text-ink shadow-card border border-line/60
+      hover:bg-surface-2 transition;
+  }
+
+  /* staff dark variants */
+  .s-card {
+    @apply rounded-2xl bg-s-panel border border-s-line;
+  }
+  .s-input {
+    @apply w-full rounded-lg border border-s-line bg-s-panel-2 px-3 h-10 text-sm text-s-ink placeholder:text-s-ink-3
+      focus:outline-2 focus:outline-s-cyan focus:border-transparent;
+  }
+  .s-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 h-9 text-[13px] font-medium transition
+      border border-s-line text-s-ink hover:bg-s-panel-2 disabled:opacity-50;
+  }
+  .s-btn-primary {
+    @apply border-transparent bg-s-ink text-s-bg hover:opacity-90;
+  }
+  .s-label {
+    @apply text-[11px] uppercase tracking-[0.12em] text-s-ink-3;
+  }
+}
+
+/* ---------- Leaflet tweaks ---------- */
+.leaflet-container {
+  font-family: inherit;
+  background: var(--canvas);
+}
+.leaflet-control-attribution {
+  font-size: 10px !important;
+  border-radius: 8px 0 0 0;
+}
+.staff-map .leaflet-container {
+  background: #0b0d10;
+}
+.staff-map .leaflet-control-attribution {
+  background: rgb(14 16 20 / 0.75) !important;
+  color: #8b93a0;
+}
+.staff-map .leaflet-control-attribution a {
+  color: #b9c0cb;
+}
+.leaflet-div-icon {
+  background: transparent;
+  border: 0;
+}
+.leaflet-tooltip.aeris-tip {
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface);
+}
+.leaflet-tooltip.aeris-tip::before {
+  display: none;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* Free OSM tiles restyled to the muted greyscale look of the design references */
+.tiles-muted {
+  filter: grayscale(1) contrast(0.88) brightness(1.06) saturate(0);
+}
+.tiles-dark {
+  filter: grayscale(1) invert(1) contrast(0.82) brightness(0.78);
+}
+.tiles-faint {
+  opacity: 0.55;
+}
+
+/* Keep Leaflet's bottom controls clear of the public map's day strip */
+.public-map .leaflet-bottom {
+  margin-bottom: 96px;
+}
+@media (max-width: 767px) {
+  .public-map .leaflet-control-zoom {
+    display: none;
+  }
+}

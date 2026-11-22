@@ -1,0 +1,18 @@
+# One-click deploy on Render's free tier: https://render.com/deploy
+# The demo database is re-seeded on every start (free instances have no persistent disk
+# and sleep after ~15 min idle), so it always shows the last 30 days with real weather.
+services:
+  - type: web
+    name: aeris
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run seed && npm start
+    healthCheckPath: /learn
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
