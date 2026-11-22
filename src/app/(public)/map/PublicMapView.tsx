@@ -149,7 +149,7 @@ export default function PublicMapView({
   );
 
   return (
-    <div className="public-map relative h-[calc(100dvh-68px)] md:h-[calc(100dvh-64px)] overflow-hidden">
+    <div className="public-map relative h-[calc(100dvh-68px-48px)] md:h-[calc(100dvh-64px)] overflow-hidden">
       <div className="absolute inset-0">
         <PublicLeaflet cells={data.cells} facilities={data.facilities} selectedId={selectedId} onSelect={onSelect} paths={paths} showPaths={showPaths} />
       </div>

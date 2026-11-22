@@ -71,11 +71,6 @@ export default async function MyReports({ searchParams }: { searchParams: Promis
             to see every report you&apos;ve made in one place.
           </p>
         )}
-        {user && (
-          <form action="/api/auth/logout" method="post" className="mt-2 md:hidden">
-            <button className="text-sm text-primary font-medium">Sign out ({user.name})</button>
-          </form>
-        )}
         {user && user.role !== "resident" && <p className="mt-2 text-sm text-ink-2">You&apos;re signed in as staff. Staff accounts don&apos;t file reports.</p>}
         {user?.role === "resident" && mine.length === 0 && <p className="mt-2 text-sm text-ink-2">No reports yet.</p>}
         <div className="mt-4 space-y-5">

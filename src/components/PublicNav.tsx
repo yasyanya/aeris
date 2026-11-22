@@ -59,6 +59,31 @@ export function TopNav({ user }: { user: { name: string; role: string } | null }
   );
 }
 
+/** Phones only: a thin account bar (no logo) so sign-in is easy to find. */
+export function MobileAccountBar({ user }: { user: { name: string; role: string } | null }) {
+  const isStaff = user && (user.role === "staff" || user.role === "manager");
+  return (
+    <div className="sticky top-0 z-[1100] flex h-12 items-center justify-end gap-2 border-b border-line/70 bg-canvas/90 px-4 backdrop-blur md:hidden">
+      {user ? (
+        <>
+          {isStaff && (
+            <Link href="/staff" className="btn btn-primary btn-sm h-8">
+              <ShieldCheck className="size-4" /> Staff
+            </Link>
+          )}
+          <form action="/api/auth/logout" method="post">
+            <button className="btn btn-ghost btn-sm h-8">Sign out</button>
+          </form>
+        </>
+      ) : (
+        <Link href="/login" className="btn btn-primary btn-sm h-8">
+          Sign in
+        </Link>
+      )}
+    </div>
+  );
+}
+
 export function BottomTabs() {
   const path = usePathname();
   const item = (href: string, label: string, Icon: typeof Home) => (
