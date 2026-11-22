@@ -210,10 +210,6 @@ body {
   filter: grayscale(1) invert(1) contrast(0.82) brightness(0.78);
 }
 
-/* Keep Leaflet's bottom controls clear of the public map's day strip */
-.public-map .leaflet-bottom {
-  margin-bottom: 96px;
-}
 @media (max-width: 767px) {
   .public-map .leaflet-control-zoom {
     display: none;

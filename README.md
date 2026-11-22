@@ -80,7 +80,6 @@ Residents can also report anonymously. They get a receipt code such as `MEL-7K3Q
   - A timestamped regional wind arrow is shown.
   - An optional "air-movement estimate" shows a dashed forward path from each facility for the next 2 hours, based on forecast wind.
   - Date ranges are 24 h, 7 days or 30 days.
-  - A Smell Pittsburgh-style daily strip shows each day; tap a day to filter.
   - Tapping an area shows its report count, median intensity, and eligible odor categories.
 - **My reports** (`/my-reports`): look up a report by receipt code, or sign in to list your own reports. Each report shows a progress rail, a public timeline, and the published response.
 - **Learn** (`/learn`) has five short explainers (map, wind, screening, process, privacy), an FAQ, and resource cards linking to NTMWD and TCEQ pages.

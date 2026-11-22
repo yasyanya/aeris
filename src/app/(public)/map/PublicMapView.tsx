@@ -1,12 +1,12 @@
 "use client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Info, Layers, Lock, X } from "lucide-react";
 import type { PublicCell } from "@/lib/aggregate";
 import { characterLabel, intensityInfo, INTENSITY, K_ANONYMITY, CATEGORY_MIN } from "@/lib/constants";
 import { bearingDeg, compass, distanceM } from "@/lib/geo";
-import { fmtDate, fmtTime, fmtWeekday, fromLocalInput } from "@/lib/format";
+import { fmtTime, fromLocalInput } from "@/lib/format";
 import { IntensityPill, WindArrow, windText } from "@/components/bits";
 
 const PublicLeaflet = dynamic(() => import("@/components/map/PublicLeaflet"), {
@@ -83,10 +83,7 @@ export default function PublicMapView({
   }, []);
 
   const selected = data.cells.find((c) => c.id === selectedId) ?? null;
-  const maxStrong = useMemo(() => Math.max(1, ...data.strip.map((d) => d.strong)), [data.strip]);
   const onSelect = useCallback((id: string | null) => setSelectedId(id), []);
-  const rangeLabel =
-    range.kind === "day" ? fmtWeekday(fromLocalInput(`${range.date}T12:00`)) : { "24h": "Last 24 hours", "7d": "Last 7 days", "30d": "Last 30 days" }[range.kind];
 
   const rangeTabs = (compact = false) => (
     <div className={`flex gap-1 rounded-full bg-surface-2 p-1 ${compact ? "" : "w-full"}`} role="tablist" aria-label="Date range">
@@ -158,21 +155,13 @@ export default function PublicMapView({
       </div>
 
       {/* ---------- desktop side panel ---------- */}
-      <aside className="card absolute left-4 top-4 bottom-[104px] z-[500] hidden w-[380px] flex-col overflow-hidden md:flex">
+      <aside className="card absolute left-4 top-4 bottom-4 z-[500] hidden w-[380px] flex-col overflow-hidden md:flex">
         <div className="border-b border-line p-5">
           <h1 className="text-xl font-semibold tracking-tight">Community map</h1>
           <p className="mt-1 text-[13px] text-ink-3">Odor reports grouped into areas, plus nearby facilities and wind.</p>
           <div className="mt-4">
             {rangeTabs()}
           </div>
-          {range.kind === "day" && (
-            <p className="mt-2 text-[13px] text-ink-2">
-              Showing <strong>{rangeLabel}</strong>{" "}
-              <button className="text-primary" onClick={() => changeRange({ kind: "7d" })}>
-                · reset
-              </button>
-            </p>
-          )}
           <dl className="mt-4 grid grid-cols-3 gap-3">
             <div>
               <dt className="label">Reports</dt>
@@ -260,39 +249,11 @@ export default function PublicMapView({
 
       {/* ---------- mobile selected-area sheet ---------- */}
       {selected && (
-        <div className="card absolute inset-x-3 bottom-[92px] z-[600] max-h-[55%] overflow-y-auto p-5 md:hidden">
+        <div className="card absolute inset-x-3 bottom-3 z-[600] max-h-[55%] overflow-y-auto p-5 md:hidden">
           {cellDetail(selected)}
         </div>
       )}
 
-      {/* ---------- day strip timeline ---------- */}
-      <div className="card absolute inset-x-3 bottom-3 z-[500] flex items-center gap-3 p-2.5 md:left-[412px] md:right-4 md:bottom-4">
-        <div className="flex-1 overflow-x-auto">
-          <ol className="flex min-w-max gap-1">
-            {data.strip.map((d) => {
-              const sel = range.kind === "day" && range.date === d.date;
-              const shade = d.strong / maxStrong;
-              const dt = fromLocalInput(`${d.date}T12:00`);
-              return (
-                <li key={d.date}>
-                  <button
-                    onClick={() => changeRange({ kind: "day", date: d.date })}
-                    title={`${fmtWeekday(dt)}: ${d.total} reports, ${d.strong} rated 3+`}
-                    className={`flex w-9 flex-col items-center gap-1 rounded-lg py-1 ${sel ? "ring-2 ring-primary" : ""}`}
-                  >
-                    <span
-                      className="block h-7 w-7 rounded-md border border-line"
-                      style={{ background: d.strong ? `color-mix(in srgb, var(--ink) ${Math.round(15 + shade * 85)}%, transparent)` : "var(--surface-2)" }}
-                    />
-                    <span className="text-[10px] text-ink-3 whitespace-nowrap">{fmtDate(dt).replace(/^\w+ /, "")}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-        <p className="hidden lg:block w-28 shrink-0 text-[11px] leading-tight text-ink-3">Tap a day. Darker = more reports rated 3+</p>
-      </div>
       {loading && <div className="absolute left-1/2 top-4 z-[700] -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-[12px] text-surface">Loading…</div>}
     </div>
   );

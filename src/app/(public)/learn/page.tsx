@@ -56,7 +56,7 @@ export default function LearnPage() {
               <strong>Squares with letters</strong> are nearby facilities (L landfill, C compost, W wastewater). Locations are approximate.
             </li>
             <li>
-              <strong>The day strip</strong> at the bottom shades each day by how many reports were rated 3 or higher. Tap a day to see just that day.
+              <strong>24 h / 7 days / 30 days</strong> at the top choose which reports are included.
             </li>
           </ul>
           <div className="mt-4 flex gap-1">
