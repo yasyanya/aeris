@@ -35,6 +35,8 @@ If you skip `npm run seed`, the app creates and seeds the database on first requ
 
 ### Deploy a free public demo (Render)
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/yasyanya/aeris)
+
 The repository includes a [`render.yaml`](render.yaml) blueprint.
 
 1. Sign in at [render.com](https://render.com) with GitHub. No card is needed for the free tier.
