@@ -20,7 +20,7 @@ export default async function Home() {
   const hint = HINT_STYLE[cond.hint.level];
   return (
     <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 sm:py-10">
-      <section className="grid gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <section className="grid gap-5 lg:grid-cols-[2fr_1fr]">
         <div className="card relative overflow-hidden p-6 sm:p-10">
           <div
             className="pointer-events-none absolute -right-24 -top-24 size-[420px] rounded-full opacity-60 blur-3xl"

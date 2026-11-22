@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Crosshair, Loader2, Lock, MapPin, Pencil, Search } from "lucide-react";
-import { CHARACTERS, DURATIONS, INTENSITY, SYMPTOMS, characterLabel, durationLabel, symptomLabel, intensityInfo } from "@/lib/constants";
+import { CHARACTERS, DURATIONS, INTENSITY, MAP_BOUNDS, SYMPTOMS, characterLabel, durationLabel, symptomLabel, intensityInfo } from "@/lib/constants";
 import { fmtDateTime, fromLocalInput, toLocalInput } from "@/lib/format";
 
 const PinPickerMap = dynamic(() => import("@/components/map/PinPickerMap"), {
@@ -35,6 +35,8 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
     setNowMs(Date.now());
     setWhenRaw(v);
   };
+  /** Which quick-pick chip (minutes ago) is selected; null once the time is edited by hand. */
+  const [quick, setQuick] = useState<number | null>(0);
   const [duration, setDuration] = useState<string>("unknown");
   const [ongoing, setOngoing] = useState(true);
   const [intensity, setIntensity] = useState<number | null>(null);
@@ -57,22 +59,36 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
 
   const useDevice = () => {
     setLocMsg(null);
-    if (!("geolocation" in navigator)) return setLocMsg("Location isn't available on this device. Drop a pin instead.");
+    if (!window.isSecureContext)
+      return setLocMsg("Your browser only shares location on secure (https) pages. Tap the map to drop a pin instead.");
+    if (!("geolocation" in navigator)) return setLocMsg("Location isn't available on this device. Tap the map to drop a pin.");
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        setLocating(false);
         const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        // Reports must be in or near the Melissa area (same limits the server checks).
+        const [[s, w], [n, e]] = MAP_BOUNDS;
+        if (p.lat < s - 0.12 || p.lat > n + 0.12 || p.lon < w - 0.12 || p.lon > e + 0.12) {
+          setLocMsg("Your device location is outside the Melissa area this app covers. Tap the map where you noticed the odor instead.");
+          return;
+        }
         setPt(p);
         setFly(p);
         setMethod("device");
-        setLocating(false);
         if (pos.coords.accuracy > 200) setLocMsg(`Location is approximate (±${Math.round(pos.coords.accuracy)} m). Drag the pin if needed.`);
       },
-      () => {
+      (err) => {
         setLocating(false);
-        setLocMsg("We couldn't get your location. Tap the map to drop a pin.");
+        setLocMsg(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission is blocked. Allow it in your browser or phone settings, or tap the map to drop a pin."
+            : err.code === err.TIMEOUT
+              ? "Finding your location took too long. Try again, or tap the map to drop a pin."
+              : "Your location isn't available right now. Tap the map to drop a pin.",
+        );
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 },
     );
   };
 
@@ -264,11 +280,24 @@ export default function ReportWizard({ facilities }: { facilities: Fac[] }) {
                   className="input max-w-[260px]"
                   value={when}
                   max={toLocalInput(new Date())}
-                  onChange={(e) => setWhen(e.target.value)}
+                  onChange={(e) => {
+                    setQuick(null);
+                    setWhen(e.target.value);
+                  }}
                   aria-invalid={!!whenError}
                 />
                 {[0, 30, 60, 180].map((m) => (
-                  <button key={m} type="button" className="chip" onClick={() => setWhen(toLocalInput(new Date(Date.now() - m * 60_000)))}>
+                  <button
+                    key={m}
+                    type="button"
+                    className="chip"
+                    data-on={quick === m}
+                    aria-pressed={quick === m}
+                    onClick={() => {
+                      setQuick(m);
+                      setWhen(toLocalInput(new Date(Date.now() - m * 60_000)));
+                    }}
+                  >
                     {m === 0 ? "Now" : m < 60 ? `${m} min ago` : `${m / 60} h ago`}
                   </button>
                 ))}

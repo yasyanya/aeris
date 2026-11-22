@@ -40,7 +40,7 @@ export default function LearnPage() {
         <p className="eyebrow">Learn</p>
         <ThemeToggle className="md:hidden" />
       </div>
-      <h1 className="mt-2 max-w-2xl text-2xl sm:text-[28px] font-semibold tracking-tight">How Aeris works, in five short explainers</h1>
+      <h1 className="mt-2 max-w-2xl text-2xl sm:text-[28px] font-semibold tracking-tight">How Aeris works</h1>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         <section id="map" className="card scroll-mt-24 p-6">
